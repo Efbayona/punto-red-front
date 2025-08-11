@@ -1,11 +1,7 @@
 import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import {loginService, registerService} from "@/AuthService.ts";
-
-interface LoginData {
-    user: string;
-    password: string;
-}
+import {loginService, registerService} from "@/modules/login/services/AuthService.ts";
+import type {LoginData} from "@/modules/login/interfaces/Auth.interfaces.ts";
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false)

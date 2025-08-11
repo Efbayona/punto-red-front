@@ -1,9 +1,5 @@
-import {environment} from './environment'
-
-interface LoginData {
-    user: string;
-    password: string;
-}
+import {environment} from "@/environment.ts";
+import type {LoginData} from "@/modules/login/interfaces/Auth.interfaces.ts";
 
 export async function loginService(data: LoginData) {
     const response = await fetch(`${environment.api}/auth/`, {

@@ -1,13 +1,8 @@
 import { environment } from "@/environment.ts";
-
-interface RechargePayload {
-    supplierId: string;
-    cellPhone: string;
-    value: string;
-}
+import type {RechargePayload} from "@/modules/dashboard/interfaces/Recharge.interface.ts";
 
 export async function createRecharge(payload: RechargePayload) {
-    console.log(payload);
+    
     const response = await fetch(`${environment.api}/recharge/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

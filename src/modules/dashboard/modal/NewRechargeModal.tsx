@@ -1,7 +1,7 @@
 import { CreditCard } from "lucide-react";
 import { useState, useEffect, type FormEvent } from "react";
-import { getOperators } from "@/OperatorService.ts";
-import { createRecharge } from "@/RechargeService.ts";
+import { getOperators } from "@/modules/dashboard/services/OperatorService.ts";
+import { createRecharge } from "@/modules/dashboard/services/RechargeService.ts";
 
 interface ModalProps {
     isOpen: boolean;
@@ -21,6 +21,10 @@ export default function NewRechargeModal({ isOpen, onClose, onSave }: ModalProps
     const [formData, setFormData] = useState({ operator: "", number: "", amount: "" });
     const [operators, setOperators] = useState<{ id: string; name: string }[]>([]);
     // const [successData, setSuccessData] = useState<string | null>(null);
+    const [errors, setErrors] = useState({
+        number: "",
+        amount: ""
+    });
 
     useEffect(() => {
         if (!isOpen) return;
@@ -38,6 +42,9 @@ export default function NewRechargeModal({ isOpen, onClose, onSave }: ModalProps
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        
+        if (errors.number || errors.amount) return;
+        
         if (!formData.operator || !formData.number || !formData.amount) return;
 
         try {
@@ -110,48 +117,65 @@ export default function NewRechargeModal({ isOpen, onClose, onSave }: ModalProps
                             ))}
                         </select>
                     </div>
-
+                    
                     {/* Número */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Número</label>
                         <input
                             type="text"
                             value={formData.number}
-                            onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setFormData({ ...formData, number: value });
+                                setErrors({
+                                    ...errors,
+                                    number: !/^3\d{9}$/.test(value)
+                                        ? "Debe empezar por 3 y tener 10 dígitos"
+                                        : ""
+                                });
+                            }}
+                            maxLength={10}
                             className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
                             placeholder="Ingresa el número"
                         />
+                        {errors.number && (
+                            <p className="text-red-500 text-sm mt-1">{errors.number}</p>
+                        )}
                     </div>
-
+                    
                     {/* Monto */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Monto</label>
                         <input
                             type="number"
                             value={formData.amount}
-                            onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                const num = Number(value);
+                                setFormData({ ...formData, amount: value });
+                                setErrors({
+                                    ...errors,
+                                    amount:
+                                        num < 1000 || num > 100000
+                                            ? "Debe estar entre 1,000 y 100,000"
+                                            : ""
+                                });
+                            }}
                             className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
                             placeholder="Ingresa el monto"
                         />
+                        {errors.amount && (
+                            <p className="text-red-500 text-sm mt-1">{errors.amount}</p>
+                        )}
                     </div>
-
+                    
                     {/* Botones */}
-                    <div className="flex justify-end gap-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100"
-                            disabled={sending}
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+                    <div className=" flex justify-end gap-2">
+                        <button type="submit" className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
                             disabled={sending}
                         >
                             <CreditCard className="w-5 h-5" />
-                            {sending ? "Enviando..." : "Guardar"}
+                            {sending ? "Recargando..." : "Recargar"}
                         </button>
                     </div>
                 </form>

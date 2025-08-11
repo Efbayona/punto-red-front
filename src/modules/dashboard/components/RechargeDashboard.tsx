@@ -1,25 +1,14 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { Download, Filter, Plus, Search, Smartphone, LayoutDashboard, History, Users, Settings } from "lucide-react";
-import NewRechargeModal from "./NewRechargeModal";
-
-interface Recharge {
-    id: string;
-    number: string;
-    operator: string;
-    amount: string;
-    status: "completado" | "pendiente" | "fallido";
-    date: string;
-    time: string;
-}
+import NewRechargeModal from "../modal/NewRechargeModal.tsx";
+import {rechargeHistoryService} from "@/modules/dashboard/services/RechargeHistoryService.ts";
+import {OPERATORS} from "@/constants/operators.ts";
+import type {Recharge, RechargeApi} from "../interfaces/Recharge.interface.ts";
 
 export default function RechargeDashboard() {
     const [modalOpen, setModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
-    const [recharges, setRecharges] = useState<Recharge[]>([
-        { id: "RC001", number: "0987654321", operator: "Movistar", amount: "50.00", status: "completado", date: "2024-01-15", time: "14:30" },
-        { id: "RC002", number: "0976543210", operator: "Claro", amount: "30.00", status: "completado", date: "2024-01-15", time: "13:15" },
-        { id: "RC003", number: "0965432109", operator: "Tigo", amount: "100.00", status: "pendiente", date: "2024-01-15", time: "12:45" },
-    ]);
+    const [recharges, setRecharges] = useState<Recharge[]>([]);
 
     const operatorColors = {
         Movistar: "bg-green-500",
@@ -27,7 +16,35 @@ export default function RechargeDashboard() {
         Tigo: "bg-blue-600",
         Personal: "bg-yellow-500",
     };
-
+    
+    useEffect(() => {
+        rechargeHistoryService()
+        .then((data) => {
+            console.log("📡 Recargas recibidas:", data);
+            
+            const mapped = data.map((r: RechargeApi) => {
+                const date = new Date(r.created_at);
+                
+                const operator = OPERATORS.find(op => op.id === r.supplier_id);
+                const operatorName = operator?.name ?? "Desconocido";
+                
+                return {
+                    number: r.cell_phone,
+                    operator: operatorName,
+                    amount: r.value,
+                    status: r.message,
+                    date: date.toLocaleDateString(),
+                    time: date.toLocaleTimeString()
+                };
+            });
+            
+            setRecharges(mapped);
+        })
+        .catch((err) => {
+            console.error("Error al cargar recargas:", err);
+        });
+    }, []);
+    
     const handleNewRecharge = (newRecharge: { operator: string; number: string; amount: string }) => {
         const recharge: Recharge = {
             id: `RC${String(recharges.length + 1).padStart(3, "0")}`,
@@ -40,7 +57,7 @@ export default function RechargeDashboard() {
         };
         setRecharges([recharge, ...recharges]);
     };
-
+    
     const filteredRecharges = recharges.filter(
         (r) =>
             r.number.includes(searchTerm) ||
@@ -130,7 +147,6 @@ export default function RechargeDashboard() {
                             <table className="w-full">
                                 <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left">ID</th>
                                     <th className="px-6 py-3 text-left">Número</th>
                                     <th className="px-6 py-3 text-left">Operador</th>
                                     <th className="px-6 py-3 text-left">Monto</th>
@@ -142,7 +158,6 @@ export default function RechargeDashboard() {
                                 <tbody>
                                 {filteredRecharges.map((recharge) => (
                                     <tr key={recharge.id} className="border-t hover:bg-gray-50">
-                                        <td className="px-6 py-3">{recharge.id}</td>
                                         <td className="px-6 py-3">{recharge.number}</td>
                                         <td className="px-6 py-3 flex items-center gap-2">
                                             <div className={`w-3 h-3 rounded-full ${operatorColors[recharge.operator as keyof typeof operatorColors]}`} />

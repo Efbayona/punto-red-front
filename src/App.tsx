@@ -1,8 +1,8 @@
 import './App.css'
 
 import { Routes, Route } from "react-router-dom"
-import Login from "./Login"
-import RechargeDashboard from "./RechargeDashboard"
+import Login from "./modules/login/components/Login.tsx"
+import RechargeDashboard from "./modules/dashboard/components/RechargeDashboard.tsx"
 
 function App() {
     return (
