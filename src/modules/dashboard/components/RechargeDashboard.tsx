@@ -1,9 +1,9 @@
 import {useEffect, useState} from "react";
 import { Download, Filter, Plus, Search, Smartphone, LayoutDashboard, History, Users, Settings } from "lucide-react";
-import NewRechargeModal from "../modal/NewRechargeModal.tsx";
 import {rechargeHistoryService} from "@/modules/dashboard/services/RechargeHistoryService.ts";
 import {OPERATORS} from "@/constants/operators.ts";
 import type {Recharge, RechargeApi} from "../interfaces/Recharge.interface.ts";
+import NewRechargeModal from "@/modules/dashboard/modal/NewRechargeModal.tsx";
 
 export default function RechargeDashboard() {
     const [modalOpen, setModalOpen] = useState(false);
@@ -182,6 +182,7 @@ export default function RechargeDashboard() {
                 onClose={() => setModalOpen(false)}
                 onSave={handleNewRecharge}
             />
+            
         </div>
     );
 }
