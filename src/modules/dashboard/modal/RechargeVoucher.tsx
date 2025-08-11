@@ -1,21 +1,13 @@
 import { Check, Phone, Hash, DollarSign, Building2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {formatCurrency, formatDate, formatPhone, formatTransactionId} from "@/utils/funtions.ts";
+import type {VoucherData} from "@/modules/dashboard/interfaces/Recharge.interface.ts";
 
-export interface VoucherData {
-	message: string;
-	transactionalID: string;
-	cellPhone: string;
-	value: string;
-	operator?: string;
-	transactionDate?: string;
-}
-
-interface VoucherRecargaProps {
+interface VoucherRechargeProps {
 	data: VoucherData;
 }
 
-export default function RechargeVoucher({ data }: VoucherRecargaProps) {
+export default function RechargeVoucher({ data }: VoucherRechargeProps) {
 
 	const getOperator = (phone: string, providedOperator?: string) => {
 		if (providedOperator) return providedOperator;

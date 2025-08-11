@@ -9,7 +9,6 @@ export async function createRecharge(payload: RechargePayload) {
         body: JSON.stringify(payload),
     });
     
-    console.log('Peticion')
 
     if (!response.ok) {
         throw new Error("Error al crear la recarga");

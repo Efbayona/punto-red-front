@@ -2,33 +2,9 @@ import { CreditCard } from "lucide-react";
 import { useState, useEffect, type FormEvent } from "react";
 import { getOperators } from "@/modules/dashboard/services/OperatorService.ts";
 import { createRecharge } from "@/modules/dashboard/services/RechargeService.ts";
+import type {ModalProps, RechargePayload, VoucherData} from "@/modules/dashboard/interfaces/Recharge.interface.ts";
 import RechargeVoucher from "@/modules/dashboard/modal/RechargeVoucher.tsx";
 
-interface ModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSave: (newRecharge: {
-        operator: string;
-        number: string;
-        amount: string;
-        transactionalID?: string;
-    }) => void;
-}
-
-interface RechargePayload {
-    supplierId: string;
-    cellPhone: string;
-    value: string;
-}
-
-export interface VoucherData {
-    message: string;
-    transactionalID: string;
-    cellPhone: string;
-    value: string;
-    operator?: string;
-    transactionDate?: string;
-}
 
 export default function NewRechargeModal({ isOpen, onClose, onSave }: ModalProps) {
     const [loading, setLoading] = useState(false);
@@ -56,11 +32,7 @@ export default function NewRechargeModal({ isOpen, onClose, onSave }: ModalProps
         try {
             setSending(true);
             
-            const payload: RechargePayload = {
-                supplierId: formData.operator,
-                cellPhone: formData.number,
-                value: formData.amount,
-            };
+            const payload: RechargePayload = {supplierId: formData.operator, cellPhone: formData.number, value: formData.amount,};
             
             const result = await createRecharge(payload);
             
@@ -80,7 +52,7 @@ export default function NewRechargeModal({ isOpen, onClose, onSave }: ModalProps
                 transactionDate: new Date().toISOString(),
             });
         } catch (error) {
-            console.error("❌ Error al enviar recarga:", error);
+            console.error("Error al enviar recarga:", error);
         } finally {
             setSending(false);
         }

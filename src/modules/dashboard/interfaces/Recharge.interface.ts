@@ -22,3 +22,23 @@ export interface RechargePayload {
 	cellPhone: string;
 	value: string;
 }
+
+export interface VoucherData {
+	message: string;
+	transactionalID: string;
+	cellPhone: string;
+	value: string;
+	operator?: string;
+	transactionDate?: string;
+}
+
+export interface ModalProps {
+	isOpen: boolean;
+	onClose: () => void;
+	onSave: (newRecharge: {
+		operator: string;
+		number: string;
+		amount: string;
+		transactionalID?: string;
+	}) => void;
+}

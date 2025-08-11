@@ -14,7 +14,7 @@ export default function RechargeDashboard() {
         Movistar: "bg-green-500",
         Claro: "bg-red-600",
         Tigo: "bg-blue-600",
-        Personal: "bg-yellow-500",
+        WOM: "bg-purple-500",
     };
     
     useEffect(() => {
