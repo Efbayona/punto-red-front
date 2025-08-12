@@ -11,18 +11,10 @@ import RechargeVoucher from "@/modules/dashboard/modal/RechargeVoucher.tsx";
 
 const quickAmounts = [1000, 5000, 10000, 20000, 50000, 100000];
 
-export default function NewRechargeModal({
-                                             isOpen,
-                                             onClose,
-                                             onSave
-                                         }: ModalProps) {
+export default function NewRechargeModal({isOpen, onClose, onSave}: ModalProps) {
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
-    const [formData, setFormData] = useState({
-        operator: "",
-        number: "",
-        amount: ""
-    });
+    const [formData, setFormData] = useState({operator: "", number: "", amount: ""});
     const [operators, setOperators] = useState<{ id: string; name: string }[]>([]);
     const [errors, setErrors] = useState({ operator: "", number: "", amount: "" });
     const [voucherData, setVoucherData] = useState<VoucherData | null>(null);
@@ -38,13 +30,7 @@ export default function NewRechargeModal({
             .catch(console.error)
             .finally(() => setLoading(false));
     }, [isOpen]);
-
-    const formatPhoneNumber = (value: string) => {
-        const cleaned = value.replace(/\D/g, "");
-        if (cleaned.length <= 3) return cleaned;
-        if (cleaned.length <= 6) return `${cleaned.slice(0, 3)} ${cleaned.slice(3)}`;
-        return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6, 10)}`;
-    };
+    
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat("es-CO", {
@@ -90,16 +76,20 @@ export default function NewRechargeModal({
                 operator: operators.find((op) => op.id === formData.operator)?.name || "",
                 number: formData.number,
                 amount: formData.amount,
-                transactionalID: result.transactionalID || "N/A"
+                transactionalID: result.transactionalID
             });
             setVoucherData({
                 message: "Recarga exitosa",
-                transactionalID: result.transactionalID || "N/A",
+                transactionalID: result.transactionalID,
                 cellPhone: formData.number,
                 value: formData.amount,
                 operator: operators.find((op) => op.id === formData.operator)?.name,
                 transactionDate: new Date().toISOString()
             });
+            
+            setFormData({ operator: "", number: "", amount: "" });
+            setErrors({ operator: "", number: "", amount: "" });
+            
         } catch (error) {
             console.error("Error al enviar recarga:", error);
         } finally {
@@ -135,25 +125,6 @@ export default function NewRechargeModal({
                         {/* Operator */}
                         <div>
                             <label className="block font-bold text-[14px] mb-[6px]">Operador</label>
-                            {/*<select*/}
-                            {/*    value={formData.operator}*/}
-                            {/*    onChange={(e) =>*/}
-                            {/*        setFormData({ ...formData, operator: e.target.value })*/}
-                            {/*    }*/}
-                            {/*    className={`mt-1 w-full border rounded-lg px-3 py-2 ${*/}
-                            {/*        errors.operator ? "border-red-500" : "border-gray-300"*/}
-                            {/*    }`}*/}
-                            {/*    disabled={loading}*/}
-                            {/*>*/}
-                            {/*    <option value="">*/}
-                            {/*        {loading ? "Cargando..." : "Selecciona tu operador"}*/}
-                            {/*    </option>*/}
-                            {/*    {operators.map((op) => (*/}
-                            {/*        <option key={op.id} value={op.id}>*/}
-                            {/*            {op.name}*/}
-                            {/*        </option>*/}
-                            {/*    ))}*/}
-                            {/*</select>*/}
                             <select
                                 value={formData.operator}
                                 onChange={(e) =>
@@ -181,8 +152,7 @@ export default function NewRechargeModal({
                                     </option>
                                 ))}
                             </select>
-
-
+                            
                             {errors.operator && (
                                 <p className="text-sm text-red-500">{errors.operator}</p>
                             )}
@@ -199,10 +169,12 @@ export default function NewRechargeModal({
                                     type="text"
                                     value={formData.number}
                                     onChange={(e) => {
-                                        const formatted = formatPhoneNumber(e.target.value);
-                                        setFormData({...formData, number: formatted});
-                                        if (errors.number)
-                                            setErrors((prev) => ({ ...prev, number: "" }));
+                                        const value = e.target.value;
+                                        setFormData({ ...formData, number: value });
+                                        setErrors({
+                                            ...errors,
+                                            number: !/^3\d{9}$/.test(value) ? "Debe empezar por 3 y tener 10 dígitos" : "",
+                                        });
                                     }}
                                     maxLength={12}
                                     placeholder="Ej: 315 281 5255"
@@ -212,7 +184,7 @@ export default function NewRechargeModal({
                                 />
                             </div>
                             {errors.number && (
-                                <p className="text-sm text-red-500">{errors.number}</p>
+                                <p className="mt-1 text-sm text-red-500">{errors.number}</p>
                             )}
                         </div>
 
@@ -248,19 +220,19 @@ export default function NewRechargeModal({
                                 <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                                 <input
                                     type="text"
-                                    value={
-                                        formData.amount && !selectedAmount
-                                            ? Number.parseInt(formData.amount).toLocaleString("es-CO")
-                                            : ""
-                                    }
+                                    value={formData.amount ? Number(formData.amount).toLocaleString("es-CO") : ""}
                                     onChange={(e) => {
-                                        const value = e.target.value.replace(/\D/g, "");
-                                        setFormData({ ...formData, amount: value });
+                                        const rawValue = e.target.value.replace(/\D/g, "");
+                                        const num = Number(rawValue);
+                                        
+                                        setFormData({ ...formData, amount: rawValue });
                                         setSelectedAmount(null);
-                                        if (errors.amount)
-                                            setErrors((prev) => ({ ...prev, amount: "" }));
+                                        setErrors({
+                                            ...errors,
+                                            amount: num < 1000 || num > 100000 ? "Debe estar entre 1,000 y 100,000" : "",
+                                        });
                                     }}
-                                    placeholder="20000"
+                                    placeholder="10,000"
                                     className={`pl-10 pr-12 w-full border rounded-lg px-3 py-2 ${
                                         errors.amount ? "border-red-500" : "border-gray-300"
                                     }`}
@@ -276,15 +248,10 @@ export default function NewRechargeModal({
 
                         {/* Buttons */}
                         <div className="flex gap-3 pt-2">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="flex-1 h-12 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                            >
+                            <button type="button" onClick={onClose} className="flex-1 h-12 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
                                 Cancelar
                             </button>
-                            <button
-                                type="submit"
+                            <button type="submit"
                                 disabled={sending}
                                 className="flex-1 h-12 bg-gradient-to-r from-pink-600 to-purple-500 text-white rounded-lg flex items-center justify-center gap-2"
                             >

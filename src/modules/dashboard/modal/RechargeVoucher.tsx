@@ -1,6 +1,6 @@
 import { Check, Phone, Hash, DollarSign, Building2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import {formatCurrency, formatDate, formatPhone, formatTransactionId} from "@/utils/funtions.ts";
+import {formatCurrency, formatDate, formatPhone} from "@/utils/funtions.ts";
 import type {VoucherData} from "@/modules/dashboard/interfaces/Recharge.interface.ts";
 
 interface VoucherRechargeProps {
@@ -91,7 +91,7 @@ export default function RechargeVoucher({ data }: VoucherRechargeProps) {
 							<span className="text-sm font-medium">ID Transacción</span>
 						</div>
 						<span className="text-xs font-mono text-gray-700 text-right max-w-[180px] break-all leading-relaxed">
-              {formatTransactionId(data.transactionalID)}
+              {data.transactionalID}
             </span>
 					</div>
 				</div>

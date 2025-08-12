@@ -1,9 +1,10 @@
 import {useEffect, useState} from "react";
-import { Download, Filter, Plus, Search, Smartphone, LayoutDashboard, History, Users, Settings } from "lucide-react";
+import { Plus, Search, Smartphone, LayoutDashboard, History, Users, Settings } from "lucide-react";
 import {rechargeHistoryService} from "@/modules/dashboard/services/RechargeHistoryService.ts";
 import {OPERATORS} from "@/constants/operators.ts";
 import type {Recharge, RechargeApi} from "../interfaces/Recharge.interface.ts";
 import NewRechargeModal from "@/modules/dashboard/modal/NewRechargeModal.tsx";
+import {formatCurrency} from "@/utils/funtions.ts";
 
 export default function RechargeDashboard() {
     const [modalOpen, setModalOpen] = useState(false);
@@ -14,48 +15,53 @@ export default function RechargeDashboard() {
         Movistar: "bg-green-500",
         Claro: "bg-red-600",
         Tigo: "bg-blue-600",
-        WOM: "bg-purple-500",
+        Wom: "bg-purple-500",
     };
     
-    useEffect(() => {
+    const fetchRecharges = () => {
         rechargeHistoryService()
         .then((data) => {
-            console.log("📡 Recargas recibidas:", data);
             
             const mapped = data.map((r: RechargeApi) => {
-                const date = new Date(r.created_at);
-                
                 const operator = OPERATORS.find(op => op.id === r.supplier_id);
                 const operatorName = operator?.name ?? "Desconocido";
                 
+                const dateObj = new Date(r.created_at);
+                const formattedDate = dateObj.toLocaleDateString("en-US", {
+                    month: "numeric",
+                    day: "numeric",
+                    year: "2-digit"
+                });
+                const formattedTime = dateObj.toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true
+                });
+                
                 return {
+                    id: r.transactional_id,
                     number: r.cell_phone,
                     operator: operatorName,
                     amount: r.value,
                     status: r.message,
-                    date: date.toLocaleDateString(),
-                    time: date.toLocaleTimeString()
+                    date: `${formattedDate}, ${formattedTime}`
                 };
             });
             
             setRecharges(mapped);
         })
         .catch((err) => {
-            console.error("Error al cargar recargas:", err);
+            console.error("❌ Error al cargar recargas:", err);
         });
+    };
+
+    
+    useEffect(() => {
+        fetchRecharges();
     }, []);
     
-    const handleNewRecharge = (newRecharge: { operator: string; number: string; amount: string }) => {
-        const recharge: Recharge = {
-            id: `RC${String(recharges.length + 1).padStart(3, "0")}`,
-            number: newRecharge.number,
-            operator: newRecharge.operator,
-            amount: newRecharge.amount,
-            status: "completado",
-            date: new Date().toISOString().split("T")[0],
-            time: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
-        };
-        setRecharges([recharge, ...recharges]);
+    const handleNewRecharge = () => {
+        fetchRecharges();
     };
     
     const filteredRecharges = recharges.filter(
@@ -83,7 +89,7 @@ export default function RechargeDashboard() {
                             <Smartphone className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="font-bold text-lg">RecargasApp</h1>
+                            <h1 className="font-bold text-lg">Punto Red</h1>
                             <p className="text-sm text-gray-500">Panel de Administración</p>
                         </div>
                     </div>
@@ -135,14 +141,6 @@ export default function RechargeDashboard() {
                         <div className="bg-white/80 rounded-2xl border overflow-hidden">
                             <div className="p-6 border-b flex justify-between items-center">
                                 <h2 className="text-lg font-semibold">Recargas Recientes ({filteredRecharges.length})</h2>
-                                <div className="flex gap-2">
-                                    <button className="border px-4 py-1 rounded-lg flex items-center gap-2">
-                                        <Filter className="w-4 h-4" /> Filtrar
-                                    </button>
-                                    <button className="border px-4 py-1 rounded-lg flex items-center gap-2">
-                                        <Download className="w-4 h-4" /> Exportar
-                                    </button>
-                                </div>
                             </div>
                             <table className="w-full">
                                 <thead className="bg-gray-50">
@@ -152,7 +150,6 @@ export default function RechargeDashboard() {
                                     <th className="px-6 py-3 text-left">Monto</th>
                                     <th className="px-6 py-3 text-left">Estado</th>
                                     <th className="px-6 py-3 text-left">Fecha</th>
-                                    <th className="px-6 py-3 text-left">Hora</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -163,10 +160,9 @@ export default function RechargeDashboard() {
                                             <div className={`w-3 h-3 rounded-full ${operatorColors[recharge.operator as keyof typeof operatorColors]}`} />
                                             {recharge.operator}
                                         </td>
-                                        <td className="px-6 py-3 font-bold">${recharge.amount}</td>
+                                        <td className="px-6 py-3 font-bold">{formatCurrency(recharge.amount)}</td>
                                         <td className="px-6 py-3">{recharge.status}</td>
                                         <td className="px-6 py-3">{recharge.date}</td>
-                                        <td className="px-6 py-3">{recharge.time}</td>
                                     </tr>
                                 ))}
                                 </tbody>

@@ -9,10 +9,6 @@ export const formatPhone = (phone: string) => {
 	return phone.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")
 }
 
-export const formatTransactionId = (id: string) => {
-	return id.toUpperCase()
-}
-
 export const formatDate = (dateString?: string) => {
 	if (!dateString) {
 		return new Date().toLocaleDateString("es-CO", {
@@ -31,3 +27,4 @@ export const formatDate = (dateString?: string) => {
 		minute: "2-digit",
 	})
 }
+

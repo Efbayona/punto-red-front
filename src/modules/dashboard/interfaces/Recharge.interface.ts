@@ -5,16 +5,15 @@ export interface Recharge {
 	amount: string;
 	status: "completado" | "pendiente" | "fallido";
 	date: string;
-	time: string;
 }
 
 export interface RechargeApi {
+	transactional_id:string;
 	supplier_id: string;
 	cell_phone: string;
 	message: string;
 	value: number;
 	created_at: string;
-	updated_at: string;
 }
 
 export interface RechargePayload {
