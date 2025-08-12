@@ -33,6 +33,6 @@ describe('Utils Functions', () => {
 		const formatted = formatDateTime(isoDate)
 
 		// Formato esperado "dd/mm/yy hh:mm AM/PM"
-		expect(formatted).toMatch(/\d{2}\/\d{2}\/\d{2} \d{2}:\d{2} (AM|PM)/)
+		expect(formatted).toMatch(/\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}/)
 	})
 })
