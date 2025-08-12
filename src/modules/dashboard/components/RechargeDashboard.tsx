@@ -3,8 +3,8 @@ import { Plus, Search, Smartphone, LayoutDashboard, History, Users, Settings } f
 import {rechargeHistoryService} from "@/modules/dashboard/services/RechargeHistoryService.ts";
 import {OPERATORS} from "@/constants/operators.ts";
 import type {Recharge, RechargeApi} from "../interfaces/Recharge.interface.ts";
-import NewRechargeModal from "@/modules/dashboard/modal/NewRechargeModal.tsx";
-import {formatCurrency} from "@/utils/funtions.ts";
+import RechargeModal from "@/modules/dashboard/modal/RechargeModal.tsx";
+import {formatCurrency, formatDateTime} from "@/utils/funtions.ts";
 
 export default function RechargeDashboard() {
     const [modalOpen, setModalOpen] = useState(false);
@@ -26,32 +26,20 @@ export default function RechargeDashboard() {
                 const operator = OPERATORS.find(op => op.id === r.supplier_id);
                 const operatorName = operator?.name ?? "Desconocido";
                 
-                const dateObj = new Date(r.created_at);
-                const formattedDate = dateObj.toLocaleDateString("en-US", {
-                    month: "numeric",
-                    day: "numeric",
-                    year: "2-digit"
-                });
-                const formattedTime = dateObj.toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true
-                });
-                
                 return {
                     id: r.transactional_id,
                     number: r.cell_phone,
                     operator: operatorName,
                     amount: r.value,
                     status: r.message,
-                    date: `${formattedDate}, ${formattedTime}`
+                    date: r.created_at
                 };
             });
             
             setRecharges(mapped);
         })
         .catch((err) => {
-            console.error("❌ Error al cargar recargas:", err);
+            console.error("Error al cargar recargas:", err);
         });
     };
 
@@ -85,7 +73,7 @@ export default function RechargeDashboard() {
                 {/* Sidebar */}
                 <div className="w-64 bg-white/80 border-r p-6">
                     <div className="flex items-center gap-3 mb-8">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-br from-pink-600 to-purple-500 rounded-xl flex items-center justify-center">
                             <Smartphone className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -99,7 +87,7 @@ export default function RechargeDashboard() {
                             <button
                                 key={index}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl ${
-                                    item.active ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-600 hover:bg-gray-50"
+                                    item.active ? "bg-blue-50 from-pink-600 font-medium" : "text-gray-600 hover:bg-gray-50"
                                 }`}
                             >
                                 <item.icon className="w-5 h-5" />
@@ -129,7 +117,7 @@ export default function RechargeDashboard() {
                             </div>
                             <button
                                 onClick={() => setModalOpen(true)}
-                                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-xl flex items-center"
+                                className="bg-gradient-to-r from-pink-600 to-purple-500 text-white px-6 py-2 rounded-xl flex items-center"
                             >
                                 <Plus className="w-4 h-4 mr-2" /> Nueva Recarga
                             </button>
@@ -162,7 +150,7 @@ export default function RechargeDashboard() {
                                         </td>
                                         <td className="px-6 py-3 font-bold">{formatCurrency(recharge.amount)}</td>
                                         <td className="px-6 py-3">{recharge.status}</td>
-                                        <td className="px-6 py-3">{recharge.date}</td>
+                                        <td className="px-6 py-3">{formatDateTime(recharge.date) }</td>
                                     </tr>
                                 ))}
                                 </tbody>
@@ -173,7 +161,7 @@ export default function RechargeDashboard() {
             </div>
 
             {/* Modal */}
-            <NewRechargeModal
+            <RechargeModal
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
                 onSave={handleNewRecharge}

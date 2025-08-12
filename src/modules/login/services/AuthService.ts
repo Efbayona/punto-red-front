@@ -1,5 +1,5 @@
 import {environment} from "@/environment.ts";
-import type {LoginData} from "@/modules/login/interfaces/Auth.interfaces.ts";
+import type {LoginData, RegisterUserData} from "@/modules/login/interfaces/Auth.interfaces.ts";
 import {toast} from "react-toastify";
 
 export async function loginService(data: LoginData, navigate: (path: string) => void) {
@@ -26,16 +26,18 @@ export async function loginService(data: LoginData, navigate: (path: string) => 
     }
 }
 
-export async function registerService(name: string, username: string, password: string) {
-	const response = await fetch(`${environment.api}/register`, {
+export async function registerService(dataUser: RegisterUserData) {
+	const response = await fetch(`${environment.api}/auth/register`, {
 		method: "POST",
-		headers: {"Content-Type": "application/json"},
-		body: JSON.stringify({name, username, password}),
-	})
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(dataUser),
+	});
 	
 	if (!response.ok) {
-		throw new Error("Error en registro")
+		throw new Error("Error en registro");
 	}
 	
-	return await response.json()
+	return true;
 }
+
+

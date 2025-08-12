@@ -27,4 +27,21 @@ export const formatDate = (dateString?: string) => {
 		minute: "2-digit",
 	})
 }
+export const formatDateTime = (isoString: string): string => {
+	const dateObj = new Date(isoString);
+	
+	const formattedDate = dateObj.toLocaleDateString("es-ES", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "2-digit"
+	});
+	
+	const formattedTime = dateObj.toLocaleTimeString("es-ES", {
+		hour: "2-digit",
+		minute: "2-digit",
+		hour12: true
+	});
+	
+	return `${formattedDate} ${formattedTime}`;
+};
 

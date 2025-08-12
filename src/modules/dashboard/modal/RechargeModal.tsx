@@ -11,7 +11,7 @@ import RechargeVoucher from "@/modules/dashboard/modal/RechargeVoucher.tsx";
 
 const quickAmounts = [1000, 5000, 10000, 20000, 50000, 100000];
 
-export default function NewRechargeModal({isOpen, onClose, onSave}: ModalProps) {
+export default function RechargeModal({isOpen, onClose, onSave}: ModalProps) {
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
     const [formData, setFormData] = useState({operator: "", number: "", amount: ""});
@@ -232,7 +232,7 @@ export default function NewRechargeModal({isOpen, onClose, onSave}: ModalProps) 
                                             amount: num < 1000 || num > 100000 ? "Debe estar entre 1,000 y 100,000" : "",
                                         });
                                     }}
-                                    placeholder="10,000"
+                                    placeholder="10.000"
                                     className={`pl-10 pr-12 w-full border rounded-lg px-3 py-2 ${
                                         errors.amount ? "border-red-500" : "border-gray-300"
                                     }`}
