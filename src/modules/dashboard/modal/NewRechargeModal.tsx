@@ -1,55 +1,104 @@
-import { CreditCard } from "lucide-react";
+import { CreditCard, Smartphone, X, Banknote } from "lucide-react";
 import { useState, useEffect, type FormEvent } from "react";
 import { getOperators } from "@/modules/dashboard/services/OperatorService.ts";
 import { createRecharge } from "@/modules/dashboard/services/RechargeService.ts";
-import type {ModalProps, RechargePayload, VoucherData} from "@/modules/dashboard/interfaces/Recharge.interface.ts";
+import type {
+    ModalProps,
+    RechargePayload,
+    VoucherData
+} from "@/modules/dashboard/interfaces/Recharge.interface.ts";
 import RechargeVoucher from "@/modules/dashboard/modal/RechargeVoucher.tsx";
 
+const quickAmounts = [1000, 5000, 10000, 20000, 50000, 100000];
 
-export default function NewRechargeModal({ isOpen, onClose, onSave }: ModalProps) {
+export default function NewRechargeModal({
+                                             isOpen,
+                                             onClose,
+                                             onSave
+                                         }: ModalProps) {
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
-    const [formData, setFormData] = useState({ operator: "", number: "", amount: "" });
+    const [formData, setFormData] = useState({
+        operator: "",
+        number: "",
+        amount: ""
+    });
     const [operators, setOperators] = useState<{ id: string; name: string }[]>([]);
-    const [errors, setErrors] = useState({ number: "", amount: "" });
+    const [errors, setErrors] = useState({ operator: "", number: "", amount: "" });
     const [voucherData, setVoucherData] = useState<VoucherData | null>(null);
-    
+    const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+
     useEffect(() => {
         if (!isOpen) return;
         setLoading(true);
         setVoucherData(null);
+        setSelectedAmount(null);
         getOperators()
-        .then((data) => setOperators(data))
-        .catch(console.error)
-        .finally(() => setLoading(false));
+            .then((data) => setOperators(data))
+            .catch(console.error)
+            .finally(() => setLoading(false));
     }, [isOpen]);
-    
+
+    const formatPhoneNumber = (value: string) => {
+        const cleaned = value.replace(/\D/g, "");
+        if (cleaned.length <= 3) return cleaned;
+        if (cleaned.length <= 6) return `${cleaned.slice(0, 3)} ${cleaned.slice(3)}`;
+        return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6, 10)}`;
+    };
+
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat("es-CO", {
+            minimumFractionDigits: 0
+        }).format(value);
+    };
+
+    const handleQuickAmountClick = (amount: number) => {
+        setSelectedAmount(amount);
+        setFormData({ ...formData, amount: amount.toString() });
+        if (errors.amount) setErrors((prev) => ({ ...prev, amount: "" }));
+    };
+
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        if (errors.number || errors.amount) return;
-        if (!formData.operator || !formData.number || !formData.amount) return;
-        
+
+        const newErrors = { operator: "", number: "", amount: "" };
+        if (!formData.operator) newErrors.operator = "Selecciona un operador";
+        if (!formData.number)
+            newErrors.number = "Ingresa el número de teléfono";
+        else if (!/^3\d{9}$/.test(formData.number.replace(/\s/g, "")))
+            newErrors.number = "Debe empezar por 3 y tener 10 dígitos";
+        if (!formData.amount)
+            newErrors.amount = "Ingresa el monto";
+        else if (
+            Number(formData.amount) < 1000 ||
+            Number(formData.amount) > 100000
+        )
+            newErrors.amount = "Debe estar entre $1000 y $100,000";
+
+        setErrors(newErrors);
+        if (Object.values(newErrors).some((err) => err)) return;
+
         try {
             setSending(true);
-            
-            const payload: RechargePayload = {supplierId: formData.operator, cellPhone: formData.number, value: formData.amount,};
-            
+            const payload: RechargePayload = {
+                supplierId: formData.operator,
+                cellPhone: formData.number.replace(/\s/g, ""),
+                value: formData.amount
+            };
             const result = await createRecharge(payload);
-            
             onSave({
                 operator: operators.find((op) => op.id === formData.operator)?.name || "",
                 number: formData.number,
                 amount: formData.amount,
-                transactionalID: result.transactionalID || "N/A",
+                transactionalID: result.transactionalID || "N/A"
             });
-            
             setVoucherData({
                 message: "Recarga exitosa",
                 transactionalID: result.transactionalID || "N/A",
                 cellPhone: formData.number,
                 value: formData.amount,
                 operator: operators.find((op) => op.id === formData.operator)?.name,
-                transactionDate: new Date().toISOString(),
+                transactionDate: new Date().toISOString()
             });
         } catch (error) {
             console.error("Error al enviar recarga:", error);
@@ -57,94 +106,206 @@ export default function NewRechargeModal({ isOpen, onClose, onSave }: ModalProps
             setSending(false);
         }
     };
-    
+
     if (!isOpen) return null;
-    
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="absolute inset-0 bg-black/50" onClick={onClose}></div>
-                {!voucherData ? (
-            <div className="relative bg-white rounded-xl p-6 shadow-lg w-full max-w-md z-10">
+
+            {!voucherData ? (
+                <div className="relative bg-white rounded-xl p-6 shadow-lg w-full max-w-md z-10">
+                    <button
+                        className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+                        onClick={onClose}
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+
+                    {/* Header */}
+                    <div className="text-center mb-6">
+                        <div className="mx-auto w-16 h-16 bg-gradient-to-r from-pink-600 to-purple-500 rounded-full flex items-center justify-center mb-4">
+                            <Smartphone className="w-8 h-8 text-white" />
+                        </div>
+                        <h2 className="text-2xl font-bold">Nueva Recarga</h2>
+                        <p className="text-gray-600">Recarga tu celular rápido y seguro</p>
+                    </div>
+
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <h2 className="text-xl font-bold mb-4">Nueva Recarga</h2>
-                        {/* Operador */}
+                        {/* Operator */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Operador</label>
+                            <label className="block font-bold text-[14px] mb-[6px]">Operador</label>
+                            {/*<select*/}
+                            {/*    value={formData.operator}*/}
+                            {/*    onChange={(e) =>*/}
+                            {/*        setFormData({ ...formData, operator: e.target.value })*/}
+                            {/*    }*/}
+                            {/*    className={`mt-1 w-full border rounded-lg px-3 py-2 ${*/}
+                            {/*        errors.operator ? "border-red-500" : "border-gray-300"*/}
+                            {/*    }`}*/}
+                            {/*    disabled={loading}*/}
+                            {/*>*/}
+                            {/*    <option value="">*/}
+                            {/*        {loading ? "Cargando..." : "Selecciona tu operador"}*/}
+                            {/*    </option>*/}
+                            {/*    {operators.map((op) => (*/}
+                            {/*        <option key={op.id} value={op.id}>*/}
+                            {/*            {op.name}*/}
+                            {/*        </option>*/}
+                            {/*    ))}*/}
+                            {/*</select>*/}
                             <select
                                 value={formData.operator}
-                                onChange={(e) => setFormData({ ...formData, operator: e.target.value })}
-                                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+                                onChange={(e) =>
+                                    setFormData({...formData, operator: e.target.value})
+                                }
+                                className={`mt-1 w-full border rounded-lg px-3 py-2 ${
+                                    errors.operator ? "border-red-500" : "border-gray-300"
+                                }`}
                                 disabled={loading}
+                                style={{
+                                    appearance: "none",
+                                    backgroundImage:
+                                        "url(\"data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>\")",
+                                    backgroundRepeat: "no-repeat",
+                                    backgroundPosition: "right 0.75rem center",
+                                    backgroundSize: "20px 20px",
+                                }}
                             >
-                                <option value="">{loading ? "Cargando operadores..." : "Selecciona tu operador"}</option>
+                                <option value="">
+                                    {loading ? "Cargando..." : "Selecciona tu operador"}
+                                </option>
                                 {operators.map((op) => (
                                     <option key={op.id} value={op.id}>
                                         {op.name}
                                     </option>
                                 ))}
                             </select>
+
+
+                            {errors.operator && (
+                                <p className="text-sm text-red-500">{errors.operator}</p>
+                            )}
                         </div>
-                        
+
                         {/* Número */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Número</label>
-                            <input
-                                type="text"
-                                value={formData.number}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    setFormData({ ...formData, number: value });
-                                    setErrors({
-                                        ...errors,
-                                        number: !/^3\d{9}$/.test(value) ? "Debe empezar por 3 y tener 10 dígitos" : "",
-                                    });
-                                }}
-                                maxLength={10}
-                                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                                placeholder="Ingresa el número"
-                            />
-                            {errors.number && <p className="text-red-500 text-sm mt-1">{errors.number}</p>}
+                            <label className="block font-bold text-[14px] mb-[6px]">
+                                Número de celular
+                            </label>
+                            <div className="relative">
+                                <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"/>
+                                <input
+                                    type="text"
+                                    value={formData.number}
+                                    onChange={(e) => {
+                                        const formatted = formatPhoneNumber(e.target.value);
+                                        setFormData({...formData, number: formatted});
+                                        if (errors.number)
+                                            setErrors((prev) => ({ ...prev, number: "" }));
+                                    }}
+                                    maxLength={12}
+                                    placeholder="Ej: 315 281 5255"
+                                    className={`pl-10 w-full border rounded-lg px-3 py-2 ${
+                                        errors.number ? "border-red-500" : "border-gray-300"
+                                    }`}
+                                />
+                            </div>
+                            {errors.number && (
+                                <p className="text-sm text-red-500">{errors.number}</p>
+                            )}
                         </div>
-                        
-                        {/* Monto */}
+
+                        {/* Amount */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Monto</label>
-                            <input
-                                type="number"
-                                value={formData.amount}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    const num = Number(value);
-                                    setFormData({ ...formData, amount: value });
-                                    setErrors({
-                                        ...errors,
-                                        amount: num < 1000 || num > 100000 ? "Debe estar entre 1,000 y 100,000" : "",
-                                    });
-                                }}
-                                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
-                                placeholder="Ingresa el monto"
-                            />
-                            {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
+                            <label className="block font-bold text-[14px] mb-[6px]">
+                                Monto de recarga
+                            </label>
+
+                            {/* Quick Amount Buttons */}
+                            <div className="grid grid-cols-3 gap-3 mb-3">
+                                {quickAmounts.map((amount) => (
+                                    <button
+                                        type="button"
+                                        key={amount}
+                                        className={`h-14 rounded-lg text-sm font-medium flex flex-col items-center justify-center gap-1 border ${
+                                            selectedAmount === amount
+                                                ? "bg-gradient-to-r from-pink-600 to-purple-500 text-white border-0"
+                                                : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                                        }`}
+                                        onClick={() => handleQuickAmountClick(amount)}
+                                    >
+                                        <span className="font-bold">
+                                            ${formatCurrency(amount)}
+                                        </span>
+                                        <span className="text-xs opacity-75">COP</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Manual Amount Input */}
+                            <div className="relative mt-[6px]">
+                                <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                <input
+                                    type="text"
+                                    value={
+                                        formData.amount && !selectedAmount
+                                            ? Number.parseInt(formData.amount).toLocaleString("es-CO")
+                                            : ""
+                                    }
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/\D/g, "");
+                                        setFormData({ ...formData, amount: value });
+                                        setSelectedAmount(null);
+                                        if (errors.amount)
+                                            setErrors((prev) => ({ ...prev, amount: "" }));
+                                    }}
+                                    placeholder="20000"
+                                    className={`pl-10 pr-12 w-full border rounded-lg px-3 py-2 ${
+                                        errors.amount ? "border-red-500" : "border-gray-300"
+                                    }`}
+                                />
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                                    COP
+                                </span>
+                            </div>
+                            {errors.amount && (
+                                <p className="text-sm text-red-500">{errors.amount}</p>
+                            )}
                         </div>
-                        
-                        {/* Botón */}
-                        <div className="flex justify-end gap-2">
+
+                        {/* Buttons */}
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="flex-1 h-12 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                            >
+                                Cancelar
+                            </button>
                             <button
                                 type="submit"
                                 disabled={sending}
-                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+                                className="flex-1 h-12 bg-gradient-to-r from-pink-600 to-purple-500 text-white rounded-lg flex items-center justify-center gap-2"
                             >
-                                <CreditCard className="w-5 h-5" />
-                                {sending ? "Recargando..." : "Recargar"}
+                                {sending ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        Procesando...
+                                    </div>
+                                ) : (
+                                    <>
+                                        <CreditCard className="w-5 h-5" />
+                                        Recargar
+                                    </>
+                                )}
                             </button>
                         </div>
                     </form>
-            </div>
-                ) : (
-                    <>
-                        <RechargeVoucher data={voucherData!} />
-                    </>
-                )}
+                </div>
+            ) : (
+                <RechargeVoucher data={voucherData} />
+            )}
         </div>
     );
 }
