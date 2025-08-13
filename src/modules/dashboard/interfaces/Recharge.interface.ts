@@ -41,3 +41,12 @@ export interface ModalProps {
 		transactionalID?: string;
 	}) => void;
 }
+
+export interface RechargeResponse {
+	cell_phone: string;
+	created_at: string;
+	message: string;
+	supplier_id: string;
+	transactional_id: string;
+	value: number;
+}

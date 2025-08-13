@@ -47,49 +47,52 @@ export default function RechargeModal({isOpen, onClose, onSave}: ModalProps) {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
-        const newErrors = { operator: "", number: "", amount: "" };
-        if (!formData.operator) newErrors.operator = "Selecciona un operador";
-        if (!formData.number)
-            newErrors.number = "Ingresa el número de teléfono";
-        else if (!/^3\d{9}$/.test(formData.number.replace(/\s/g, "")))
-            newErrors.number = "Debe empezar por 3 y tener 10 dígitos";
-        if (!formData.amount)
-            newErrors.amount = "Ingresa el monto";
-        else if (
-            Number(formData.amount) < 1000 ||
-            Number(formData.amount) > 100000
-        )
-            newErrors.amount = "Debe estar entre $1000 y $100,000";
+        const errors = {
+            operator: !formData.operator ? "Selecciona un operador" : "",
+            number: !formData.number ? "Ingresa el número de teléfono" : !/^3\d{9}$/.test(formData.number.replace(/\s/g, ""))
+                    ? "Debe empezar por 3 y tener 10 dígitos" : "",
+            amount: !formData.amount ? "Ingresa el monto" : Number(formData.amount) < 1000 || Number(formData.amount) > 100000
+                    ? "Debe estar entre $1000 y $100,000"
+                    : ""
+        };
 
-        setErrors(newErrors);
-        if (Object.values(newErrors).some((err) => err)) return;
+        setErrors(errors);
+        if (Object.values(errors).some(Boolean)) return;
 
         try {
             setSending(true);
+
             const payload: RechargePayload = {
                 supplierId: formData.operator,
                 cellPhone: formData.number.replace(/\s/g, ""),
                 value: formData.amount
             };
+
             const result = await createRecharge(payload);
+
+            console.log("Respuesta completa de createRecharge:", result);
+
+            const operatorName = operators.find(op => op.id === formData.operator)?.name || "";
+
             onSave({
-                operator: operators.find((op) => op.id === formData.operator)?.name || "",
+                operator: operatorName,
                 number: formData.number,
                 amount: formData.amount,
-                transactionalID: result.transactionalID
+                transactionalID: result.transactional_id
             });
+
             setVoucherData({
                 message: "Recarga exitosa",
-                transactionalID: result.transactionalID,
+                transactionalID: result.transactional_id,
                 cellPhone: formData.number,
                 value: formData.amount,
-                operator: operators.find((op) => op.id === formData.operator)?.name,
+                operator: operatorName,
                 transactionDate: new Date().toISOString()
             });
-            
+
             setFormData({ operator: "", number: "", amount: "" });
             setErrors({ operator: "", number: "", amount: "" });
-            
+
         } catch (error) {
             console.error("Error al enviar recarga:", error);
         } finally {

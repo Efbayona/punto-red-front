@@ -9,41 +9,8 @@ interface VoucherRechargeProps {
 
 export default function RechargeVoucher({ data }: VoucherRechargeProps) {
 
-	const getOperator = (phone: string, providedOperator?: string) => {
-		if (providedOperator) return providedOperator;
-
-		const prefix = phone.substring(0, 3);
-		switch (prefix) {
-			case "300":
-			case "301":
-			case "302":
-			case "303":
-			case "304":
-			case "305":
-				return "Tigo";
-			case "310":
-			case "311":
-			case "312":
-			case "313":
-			case "314":
-			case "315":
-			case "316":
-			case "317":
-			case "318":
-			case "319":
-				return "Movistar";
-			case "320":
-			case "321":
-			case "322":
-			case "323":
-			case "324":
-			case "325":
-				return "Claro";
-			default:
-				return "Operador";
-		}
-	};
-
+	console.log(data)
+	
 	return (
 		<Card className="w-full max-w-md mx-auto bg-white border border-gray-200 shadow-lg z-10">
 			<CardContent className="p-8 space-y-6">
@@ -66,7 +33,7 @@ export default function RechargeVoucher({ data }: VoucherRechargeProps) {
 							<Building2 className="w-5 h-5" />
 							<span className="text-sm font-medium">Operador</span>
 						</div>
-						<span className="text-sm font-semibold text-gray-900">{getOperator(data.cellPhone, data.operator)}</span>
+						<span className="text-sm font-semibold text-gray-900">{data.cellPhone}</span>
 					</div>
 
 					<div className="flex items-center justify-between">

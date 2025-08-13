@@ -27,7 +27,7 @@ export default function Login() {
 			}
 			
 			const dataUserLogin: LoginData = {
-				user: loginUsername,
+				user: loginUsername.toLowerCase(),
 				password: loginPassword,
 			};
 			
