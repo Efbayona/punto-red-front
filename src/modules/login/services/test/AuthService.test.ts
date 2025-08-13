@@ -34,7 +34,7 @@ describe("Auth services", () => {
 		// Verifica que la navegación se hizo a la ruta esperada tras login exitoso
 		expect(mockNavigate).toHaveBeenCalledWith("/recharge-dashboard");
 		// Verifica que se mostró el mensaje de éxito con toast
-		expect(toast.success).toHaveBeenCalledWith("Login exitoso, bienvenido!");
+		expect(toast.success).toHaveBeenCalledWith("Login exitoso, Bienvenido!");
 	});
 	
 	it("loginService failure shows toast.error with message", async () => {

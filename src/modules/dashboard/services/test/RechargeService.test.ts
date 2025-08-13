@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import {createRecharge} from "@/modules/dashboard/services/RechargeService.ts";
+import { createRecharge } from "@/modules/dashboard/services/RechargeService";
+import { environment } from "@/environment";
 
 describe("createRecharge", () => {
 	beforeEach(() => {
@@ -24,7 +25,7 @@ describe("createRecharge", () => {
 		const result = await createRecharge(mockPayload);
 		
 		expect(global.fetch).toHaveBeenCalledWith(
-			`${process.env.API_URL || "http://localhost"}/recharge/`,
+			`${environment.api}/recharge/`,
 			{
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -47,7 +48,9 @@ describe("createRecharge", () => {
 			} as Response)
 		);
 		
-		await expect(createRecharge(mockPayload)).rejects.toThrow("Error al crear la recarga");
+		await expect(createRecharge(mockPayload)).rejects.toThrow(
+			"Error al crear la recarga"
+		);
 	});
 	
 	it("throws error on fetch failure", async () => {

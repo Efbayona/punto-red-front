@@ -19,7 +19,7 @@ export async function loginService(data: LoginData, navigate: (path: string) => 
         const result = await response.json();
         console.log(result);
         navigate("/recharge-dashboard");
-        toast.success("Login exitoso, bienvenido!");
+        toast.success("Login exitoso, Bienvenido!");
     } catch (error) {
         console.log(error);
         toast.error("No se pudo conectar con el servidor");

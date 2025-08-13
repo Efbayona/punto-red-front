@@ -2,11 +2,7 @@ import { CreditCard, Smartphone, X, Banknote } from "lucide-react";
 import { useState, useEffect, type FormEvent } from "react";
 import { getOperators } from "@/modules/dashboard/services/OperatorService.ts";
 import { createRecharge } from "@/modules/dashboard/services/RechargeService.ts";
-import type {
-    ModalProps,
-    RechargePayload,
-    VoucherData
-} from "@/modules/dashboard/interfaces/Recharge.interface.ts";
+import type { ModalProps, RechargePayload, VoucherData } from "@/modules/dashboard/interfaces/Recharge.interface.ts";
 import RechargeVoucher from "@/modules/dashboard/modal/RechargeVoucher.tsx";
 
 const quickAmounts = [1000, 5000, 10000, 20000, 50000, 100000];
@@ -87,7 +83,7 @@ export default function RechargeModal({isOpen, onClose, onSave}: ModalProps) {
                 cellPhone: formData.number,
                 value: formData.amount,
                 operator: operatorName,
-                transactionDate: new Date().toISOString()
+                created_at: new Date().toISOString()
             });
 
             setFormData({ operator: "", number: "", amount: "" });

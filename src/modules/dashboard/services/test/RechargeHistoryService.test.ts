@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import {rechargeHistoryService} from "@/modules/dashboard/services/RechargeHistoryService.ts";
+import { rechargeHistoryService } from "@/modules/dashboard/services/RechargeHistoryService";
+import { environment } from "@/environment";
 
 describe("rechargeHistoryService", () => {
 	beforeEach(() => {
@@ -22,7 +23,7 @@ describe("rechargeHistoryService", () => {
 		const result = await rechargeHistoryService();
 		
 		expect(global.fetch).toHaveBeenCalledWith(
-			`${process.env.API_URL || "http://localhost"}/recharge/history`,
+			`${environment.api}/recharge/history`,
 			{
 				method: "GET",
 				headers: { "Content-Type": "application/json" },

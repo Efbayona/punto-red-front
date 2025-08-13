@@ -27,8 +27,8 @@ export interface VoucherData {
 	transactionalID: string;
 	cellPhone: string;
 	value: string;
-	operator?: string;
-	transactionDate?: string;
+	operator: string;
+	created_at: string;
 }
 
 export interface ModalProps {

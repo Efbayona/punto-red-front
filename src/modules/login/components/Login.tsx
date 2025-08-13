@@ -22,7 +22,7 @@ export default function Login() {
 		
 		try {
 			if (!loginUsername || !loginPassword) {
-				alert("Por favor ingresa usuario y contraseña");
+				toast.warning("Por favor ingresa usuario y contraseña");
 				return;
 			}
 			
@@ -43,11 +43,11 @@ export default function Login() {
 		
 		try {
 			if (!registerUsername || !registerPassword || !registerConfirmPassword) {
-				alert("Por favor completa todos los campos");
+				toast.warning("Por favor completa todos los campos");
 				return;
 			}
 			if (registerPassword !== registerConfirmPassword) {
-				alert("Las contraseñas no coinciden");
+				toast.warning("Las contraseñas no coinciden");
 				return;
 			}
 			

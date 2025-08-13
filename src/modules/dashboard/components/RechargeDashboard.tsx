@@ -11,12 +11,7 @@ export default function RechargeDashboard() {
     const [searchTerm, setSearchTerm] = useState("");
     const [recharges, setRecharges] = useState<Recharge[]>([]);
 
-    const operatorColors = {
-        Movistar: "bg-green-500",
-        Claro: "bg-red-600",
-        Tigo: "bg-blue-600",
-        Wom: "bg-purple-500",
-    };
+    const operatorColors = { Movistar: "bg-green-500", Claro: "bg-red-600", Tigo: "bg-blue-600", Wom: "bg-purple-500" };
     
     const fetchRecharges = () => {
         rechargeHistoryService()
@@ -42,7 +37,6 @@ export default function RechargeDashboard() {
             console.error("Error al cargar recargas:", err);
         });
     };
-
     
     useEffect(() => {
         fetchRecharges();
@@ -127,9 +121,9 @@ export default function RechargeDashboard() {
                     {/* Table */}
                     <main className="flex-1 p-8">
                         <div className="bg-white/80 rounded-2xl border overflow-hidden">
-                            <div className="p-6 border-b flex justify-between items-center">
-                                <h2 className="text-lg font-semibold">Recargas Recientes ({filteredRecharges.length})</h2>
-                            </div>
+                            {/*<div className="p-6 border-b flex justify-between items-center">*/}
+                            {/*    <h2 className="text-lg font-semibold">Recargas Recientes ({filteredRecharges.length})</h2>*/}
+                            {/*</div>*/}
                             <table className="w-full">
                                 <thead className="bg-gray-50">
                                 <tr>

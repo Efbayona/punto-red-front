@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import {getOperators} from "@/modules/dashboard/services/OperatorService.ts";
+import { getOperators } from "@/modules/dashboard/services/OperatorService";
+import { environment } from "@/environment";
 
 describe("getOperators", () => {
 	beforeEach(() => {
@@ -22,7 +23,7 @@ describe("getOperators", () => {
 		const result = await getOperators();
 		
 		expect(global.fetch).toHaveBeenCalledWith(
-			`${process.env.API_URL || "http://localhost"}/operator/`,
+			`${environment.api}/operator/`,
 			{
 				method: "GET",
 				headers: { "Content-Type": "application/json" },
