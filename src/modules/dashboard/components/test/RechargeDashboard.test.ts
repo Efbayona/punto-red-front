@@ -48,6 +48,8 @@ describe("fetchRecharges", () => {
 	};
 	
 	it("mapea y guarda los datos correctamente", async () => {
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-expect-error
 		(rechargeHistoryService as vi.Mock).mockResolvedValue(mockData);
 		
 		await fetchRecharges();
@@ -66,6 +68,8 @@ describe("fetchRecharges", () => {
 	
 	it("muestra un error si la petición falla", async () => {
 		const mockError = new Error("Fallo de red");
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-expect-error
 		(rechargeHistoryService as vi.Mock).mockRejectedValue(mockError);
 		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 		

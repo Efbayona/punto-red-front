@@ -1,9 +1,11 @@
-export const formatCurrency = (value: string) => {
+export const formatCurrency = (value: number) => {
 	const formattedNumber = new Intl.NumberFormat("es-CO", {
 		minimumFractionDigits: 0,
-	}).format(Number.parseInt(value))
-	return `${formattedNumber} COP`
-}
+	}).format(value);
+	
+	return `${formattedNumber} COP`;
+};
+
 
 export const formatPhone = (phone: string) => {
 	return phone.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")

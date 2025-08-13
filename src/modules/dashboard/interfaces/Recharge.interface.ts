@@ -17,16 +17,17 @@ export interface RechargeApi {
 }
 
 export interface RechargePayload {
+	operator: string;
 	supplierId: string;
 	cellPhone: string;
-	value: string;
+	value: number;
 }
 
 export interface VoucherData {
 	message: string;
 	transactionalID: string;
 	cellPhone: string;
-	value: string;
+	value: number;
 	operator: string;
 	created_at: string;
 }
@@ -34,12 +35,7 @@ export interface VoucherData {
 export interface ModalProps {
 	isOpen: boolean;
 	onClose: () => void;
-	onSave: (newRecharge: {
-		operator: string;
-		number: string;
-		amount: string;
-		transactionalID?: string;
-	}) => void;
+	onSave: () => void;
 }
 
 export interface RechargeResponse {
@@ -49,4 +45,22 @@ export interface RechargeResponse {
 	supplier_id: string;
 	transactional_id: string;
 	value: number;
+}
+
+export interface RechargeHistoryResponse {
+	cell_phone: string;
+	message: string;
+	value: number;
+	transactional_id: string;
+	supplierId: string;
+	operator: string;
+	createdAt: string;
+}
+
+export interface PageResponse<T> {
+	content: T[];
+	totalPages: number;
+	totalElements: number;
+	size: number;
+	number: number;
 }
