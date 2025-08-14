@@ -54,7 +54,7 @@ export interface RechargeHistoryResponse {
 	transactional_id: string;
 	supplierId: string;
 	operator: string;
-	createdAt: string;
+	created_at: string;
 }
 
 export interface PageResponse<T> {

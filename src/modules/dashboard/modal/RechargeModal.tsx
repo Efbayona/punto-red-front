@@ -176,7 +176,7 @@ export default function RechargeModal({isOpen, onClose, onSave}: ModalProps) {
 									type="text"
 									value={formData.number}
 									onChange={(e) => {
-										const value = e.target.value;
+										const value = e.target.value.replace(/\D/g, "");
 										setFormData({...formData, number: value});
 										setErrors({
 											...errors,
