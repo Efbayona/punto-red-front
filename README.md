@@ -4,7 +4,7 @@ Este proyecto corresponde al módulo de recargas de **Punto Red**, desarrollado 
 Su objetivo es permitir la gestión y ejecución de recargas de manera rápida, segura y eficiente, sirviendo como una base
 sólida para aplicaciones web modernas y escalables.
 
-## Tecnologías utilizadas
+## Características principales
 
 - React - Biblioteca para la construcción de interfaces de usuario
 - Vite - Herramienta de desarrollo y empaquetado rápido

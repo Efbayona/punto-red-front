@@ -1,85 +1,152 @@
+import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { RechargeApi } from "@/modules/dashboard/interfaces/Recharge.interface.ts";
-import { OPERATORS } from "@/constants/operators";
-import { rechargeHistoryService } from "@/modules/dashboard/services/RechargeHistoryService.ts";
-vi.mock("@/modules/dashboard/services/RechargeHistoryService.ts", () => ({
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { rechargeHistoryService } from "@/modules/dashboard/services/RechargeHistoryService";
+import type {PageResponse, RechargeHistoryResponse} from "@/modules/dashboard/interfaces/Recharge.interface";
+
+vi.mock("@/modules/dashboard/services/RechargeHistoryService", () => ({
 	rechargeHistoryService: vi.fn(),
 }));
 
-describe("fetchRecharges", () => {
-	let mockSetRecharges: ReturnType<typeof vi.fn>;
+const useRechargeHistory = () => {
+	const [recharges, setRecharges] = useState<PageResponse<RechargeHistoryResponse> | null>(null);
+	const [page, setPage] = useState(0);
+	const [searchTerm, setSearchTerm] = useState("");
 	
-	const mockData: RechargeApi[] = [
-		{
-			transactional_id: "TX001",
-			cell_phone: "3001234567",
-			supplier_id: "8753",
-			value: 5000,
-			message: "Exitosa",
-			created_at: "2025-08-13T10:00:00Z",
-		},
-	];
+	const fetchRecharges = useCallback(() => {
+		rechargeHistoryService(page)
+		.then((data) => {
+			setRecharges(data);
+		})
+		.catch((err) => {
+			console.error("Error al cargar recargas:", err);
+		});
+	}, [page]);
+	
+	useEffect(() => {
+		fetchRecharges();
+	}, [fetchRecharges]);
+	
+	const handleNewRecharge = fetchRecharges;
+	
+	const filteredRecharges = useMemo(() => {
+		if (!recharges) return [];
+		const term = searchTerm.toLowerCase();
+		return recharges.content.filter((r) => {
+			const operatorName = r.supplierId ?? "";
+			const cellPhone = r.cell_phone ?? "";
+			const transactionalId = r.transactional_id ?? "";
+			return (
+				cellPhone.toLowerCase().includes(term) ||
+				operatorName.toLowerCase().includes(term) ||
+				transactionalId.toLowerCase().includes(term)
+			);
+		});
+	}, [recharges, searchTerm]);
+	
+	return { recharges, page, setPage, setSearchTerm, filteredRecharges, handleNewRecharge };
+};
+
+describe("useRechargeHistory hook", () => {
+	const mockData: PageResponse<RechargeHistoryResponse> = {
+		content: [
+			{
+				cell_phone: "3001234567",
+				message: "Recarga exitosa",
+				value: 5000,
+				transactional_id: "TX123",
+				supplierId: "Claro",
+				operator: "Claro",
+				created_at: "2025-08-14",
+			},
+			{
+				cell_phone: "3017654321",
+				message: "Recarga fallida",
+				value: 10000,
+				transactional_id: "TX999",
+				supplierId: "Tigo",
+				operator: "Tigo",
+				created_at: "2025-08-13",
+			},
+		],
+		totalPages: 1,
+		totalElements: 2,
+		number: 0,
+		size: 10,
+	};
 	
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockSetRecharges = vi.fn();
-	});
-	
-	const fetchRecharges = async () => {
-		try {
-			const data = await rechargeHistoryService();
-			const mapped = data.map((r: RechargeApi) => {
-				const operator = OPERATORS.find((op) => op.id === r.supplier_id);
-				const operatorName = operator?.name ?? "Desconocido";
-				
-				return {
-					id: r.transactional_id,
-					number: r.cell_phone,
-					operator: operatorName,
-					amount: r.value,
-					status: r.message,
-					date: r.created_at,
-				};
-			});
-			mockSetRecharges(mapped);
-		} catch (err) {
-			console.error("Error al cargar recargas:", err);
-		}
-	};
-	
-	it("mapea y guarda los datos correctamente", async () => {
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-expect-error
 		(rechargeHistoryService as vi.Mock).mockResolvedValue(mockData);
-		
-		await fetchRecharges();
-		
-		expect(mockSetRecharges).toHaveBeenCalledWith([
-			{
-				id: "TX001",
-				number: "3001234567",
-				operator: "Claro",
-				amount: 5000,
-				status: "Exitosa",
-				date: "2025-08-13T10:00:00Z",
-			},
-		]);
 	});
 	
-	it("muestra un error si la petición falla", async () => {
-		const mockError = new Error("Fallo de red");
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-expect-error
-		(rechargeHistoryService as vi.Mock).mockRejectedValue(mockError);
-		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+	it("debe llamar a fetchRecharges y establecer recargas", async () => {
+		const { result } = renderHook(() => useRechargeHistory());
 		
-		await fetchRecharges();
+		// Esperar a que el hook haga la llamada inicial
+		await vi.waitFor(() => {
+			expect(rechargeHistoryService).toHaveBeenCalledWith(0);
+			expect(result.current.recharges).toEqual(mockData);
+		});
+	});
+	
+	it("debe llamar a handleNewRecharge y actualizar recargas", async () => {
+		const { result } = renderHook(() => useRechargeHistory());
 		
-		expect(consoleSpy).toHaveBeenCalledWith(
-			"Error al cargar recargas:",
-			mockError
-		);
+		await vi.waitFor(() => {
+			expect(result.current.recharges).toEqual(mockData);
+		});
 		
-		consoleSpy.mockRestore();
+		await act(async () => {
+			await result.current.handleNewRecharge();
+		});
+		
+		expect(rechargeHistoryService).toHaveBeenCalledTimes(2);
+	});
+	
+	it("debe filtrar recargas por número de celular", async () => {
+		const { result } = renderHook(() => useRechargeHistory());
+		
+		await vi.waitFor(() => {
+			expect(result.current.recharges).toEqual(mockData);
+		});
+		
+		act(() => {
+			result.current.setSearchTerm("300123");
+		});
+		
+		expect(result.current.filteredRecharges).toHaveLength(1);
+		expect(result.current.filteredRecharges[0].cell_phone).toBe("3001234567");
+	});
+	
+	it("debe filtrar recargas por operador", async () => {
+		const { result } = renderHook(() => useRechargeHistory());
+		
+		await vi.waitFor(() => {
+			expect(result.current.recharges).toEqual(mockData);
+		});
+		
+		act(() => {
+			result.current.setSearchTerm("Tigo");
+		});
+		
+		expect(result.current.filteredRecharges).toHaveLength(1);
+		expect(result.current.filteredRecharges[0].supplierId).toBe("Tigo");
+	});
+	
+	it("debe devolver todas las recargas si searchTerm está vacío", async () => {
+		const { result } = renderHook(() => useRechargeHistory());
+		
+		await vi.waitFor(() => {
+			expect(result.current.recharges).toEqual(mockData);
+		});
+		
+		act(() => {
+			result.current.setSearchTerm("");
+		});
+		
+		expect(result.current.filteredRecharges).toHaveLength(2);
 	});
 });

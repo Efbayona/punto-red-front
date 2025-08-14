@@ -17,7 +17,9 @@ export async function loginService(data: LoginData, navigate: (path: string) => 
         }
         
         const result = await response.json();
-        console.log(result);
+		
+	    localStorage.setItem("token", result.token);
+		
         navigate("/recharge-dashboard");
         toast.success("Login exitoso, Bienvenido!");
     } catch (error) {
@@ -40,5 +42,13 @@ export async function registerService(dataUser: RegisterUserData) {
 	return true;
 }
 
+export function logout(navigate: (path: string) => void) {
+	localStorage.removeItem("token");
+	navigate("/");
+}
+
+export function getToken(): string | null {
+	return localStorage.getItem("token");
+}
 
 
