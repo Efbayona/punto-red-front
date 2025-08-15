@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "src/modules/dashboard/components/test/**/*",
+    "src/modules/dashboard/modal/test/**/*",
+    "src/modules/dashboard/services/test/**/*",
+    "src/modules/login/components/test/**/*",
+    "src/modules/login/services/test/**/*",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "src/setupTests.ts"
+  ]
+}
